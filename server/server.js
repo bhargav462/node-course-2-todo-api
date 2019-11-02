@@ -30,9 +30,11 @@ app.post('/todos',authenticate,(req,res) => {
 });
 
 app.get('/todos',authenticate,(req,res) => {
+    console.log(JSON.stringify(req.newUser,undefined,2));
   todo.find({
-      _creator:req.user._id
+      _creator:req.newUser._id
   }).then((todos) => {
+      console.log('todos',todos);
       res.send({todos});
 },(e) => {
     res.status(400).send(e);
@@ -71,7 +73,7 @@ app.delete('/todos/:id',authenticate,(req,res) => {
 
  todo.findOneAndRemove({
      _id:id,
-     _creator:req.user._id
+     _creator:req.newUser._id
     }).then((todo) => {
      if(!todo)
      return res.status(404).send('No data');
@@ -151,7 +153,7 @@ app.post('/users/login',(req,res) => {
   user.findByCredentials(body.email,body.password).then((newUser) => {
      
         var access = "auth";
-        var token =  jwt.sign({_id:newUser._id.toHexString(),access},'abc123').toString();
+        var token =  jwt.sign({_id:newUser._id.toHexString(),access},process.env.JWT_SECRET).toString();
           res.header('x-auth',token).send(newUser);
      
     
